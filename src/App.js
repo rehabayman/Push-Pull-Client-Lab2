@@ -1,14 +1,14 @@
 import React from 'react';
 // import logo from './logo.svg';
 import './App.css';
-import ShortPolling from './components/ShortPolling'
-import LongPolling from './components/LongPolling'
+import SSE from './components/SSE'
+import WS from './components/WS'
 
 
 function App() {
   return (
-    // < ShortPolling />
-    < LongPolling />
+    // < WS />
+    < SSE />
   );
 }
 

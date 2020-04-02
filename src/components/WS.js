@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import io from 'socket.io-client';
 
-function ShortPolling () {
-    
+const socket = io.connect('http://localhost:5000');
+
+function WS () {
+
     const [messages, setMessages] = useState([]);
     const [username, setUsername] = useState('');
     const [input, setInput] = useState('');
 
     useEffect(() => {
-        setInterval(
-            () => axios.get('http://localhost:5000/messages').then((res) => {
-                setMessages(res.data);
-            })
-            ,10*1000);
+        socket.on('new-message', (newMessage) => {
+            setMessages(messages  => messages.concat(newMessage));
+        });
     }, []);
 
     const handleChange = (e) => {
@@ -27,13 +27,14 @@ function ShortPolling () {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        axios.post('http://localhost:5000/messages', {content: input, username});
-        
+        socket.emit('message', {content: input, username});
+        setInput('');
+        setUsername('');
     }
 
     return (
         <div style={{marginTop: "2rem", marginLeft: "2rem"}}>
-            <h1>Short Polling</h1>
+            <h1>Web Sockets</h1>
             <form id="form" onSubmit={handleSubmit}>
                 Username: <input id="username" type="text" name="username" onChange={handleUsernameChange} value={username} style={{marginBottom: "1rem"}}></input> <br></br>
                 Message: <input id="content" type="text" name="content" onChange={handleChange} value={input} style={{marginBottom: "1rem"}}></input> <br></br>
@@ -46,7 +47,6 @@ function ShortPolling () {
             </div>
         </div>
     );
-
 }
 
-export default ShortPolling;
+export default WS;

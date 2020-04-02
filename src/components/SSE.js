@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const id = Math.ceil(Math.random() * 1000);
 
-function LongPolling () {
+function SSE () {
 
     const [messages, setMessages] = useState([]);
     const [username, setUsername] = useState('');
@@ -11,12 +10,12 @@ function LongPolling () {
 
     useEffect(() => {
 
-        const subscribe = (messages) => axios.post('http://localhost:5000/subscribe', {id}).then((res) => {
-            setMessages(messages.concat(res.data));
-            subscribe(messages.concat(res.data));
-        });
-
-        subscribe(messages);
+        const eventSource = new EventSource('http://localhost:5000/subscribe');
+        eventSource.onmessage = (e) => {
+            console.log(e.data);
+            const msg = JSON.parse(e.data);
+            setMessages(messages => messages.concat(msg));
+        }
 
     }, []);
 
@@ -32,12 +31,16 @@ function LongPolling () {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        axios.post('http://localhost:5000/messages/subscribers', {content: input, username});
+        axios.post('http://localhost:5000/messages/subscribers', {content: input, username})
+            .then(() => {
+                setInput('');
+                setUsername('');
+            });
     }
 
     return (
         <div style={{marginTop: "2rem", marginLeft: "2rem"}}>
-            <h1>Long Polling</h1>
+            <h1>SSE</h1>
             <form id="form" onSubmit={handleSubmit}>
                 Username: <input id="username" type="text" name="username" onChange={handleUsernameChange} value={username} style={{marginBottom: "1rem"}}></input> <br></br>
                 Message: <input id="content" type="text" name="content" onChange={handleChange} value={input} style={{marginBottom: "1rem"}}></input> <br></br>
@@ -52,4 +55,4 @@ function LongPolling () {
     );
 }
 
-export default LongPolling;
+export default SSE;
